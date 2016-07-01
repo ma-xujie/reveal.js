@@ -234,7 +234,7 @@ def foo():
 </script></section><section data-markdown><script type="text/template">
 ## 互斥锁
 
-\begin{minted}[linenos=true,frame=single]{Python}
+```python
 cnt = 0
 mutex = threading.Lock()
 
@@ -243,7 +243,7 @@ def foo():
     for i in range(100000):
       with mutex:
         cnt = cnt + 1
-\end{minted}
+```
 
 - 用 with 语句来写更加优雅
 </script></section><section data-markdown><script type="text/template">
