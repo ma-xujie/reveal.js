@@ -106,7 +106,6 @@
 </script></section><section ><section data-markdown><script type="text/template">
 ## 简单的多线程程序
 
-- 以 Python 为例
 
 ```python
 import threading
@@ -118,15 +117,16 @@ t.start()  # 启动线程
 # 然后就可以干别的事情了
 ```
 
+- 以 Python 为例
 - 在 Python 中启动多线程只需要 import 一下 threading 库，创建一个 Thread 对象，然后启动就可以啦
 </script></section><section data-markdown><script type="text/template">
-- 来看看 Thread 的参数
 
 ```python
 threading.Thread(group=None, target=None, name=None,
                  args=(), kwargs={}, *, daemon=None)
 ```
 
+- 来看看 Thread 的参数
 - group 并没有什么卵用
 - target 是 Thread 运行时调用的函数
 - name 是给这个线程起的名字（一个字符串）
@@ -356,7 +356,7 @@ mtx.unlock();
 </script></section></section><section ><section data-markdown><script type="text/template">
 ## 作业
 
-### 非常简单的多线程爬虫
+### 完成一个非常简单的多线程爬虫
 
 - 一个获取豆瓣电影相关推荐的小程序
 - 单线程的代码已经写好
@@ -368,7 +368,15 @@ mtx.unlock();
 
 - 可以开若干个线程，让每个线程自行去队列中领取任务并执行
 - 注意 Python 的 list 不是线程安全的。
-</script></section></section></div>
+
+</script></section></section><section  data-markdown><script type="text/template">
+## 下一讲
+
+- 多进程编程
+- 进程间通信
+- 跨语言通信
+
+</script></section></div>
         </div>
 
         <script src="lib/js/head.min.js"></script>
