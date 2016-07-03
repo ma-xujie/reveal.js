@@ -19,79 +19,138 @@
         <div class="reveal">
             <div class="slides"><section  data-markdown><script type="text/template">## 多线程与多进程编程
 
-### Part I
+### Part II
 
 <br>
 
 #### 马栩杰
 
 #### 电子系科协 软件部
-
-mxj14@mails.tsinghua.edu.cn
-
 </script></section><section ><section data-markdown><script type="text/template">
-## 背景
-
-- 现代操作系统都可以同时运行多个程序
-  - IDE + 音乐播放器 + 浏览器 + 文本编辑器 + 邮箱客户端 + ....
-
-- 很多软件单个程序也在同一时刻执行着很多任务
-  - 浏览器：多个网页 + 下载
-  - 一不小心中各种全家桶..
-</script></section><section data-markdown><script type="text/template">
-- 多个程序同时运行 = 多核处理器一个核心运行一个程序？
-</script></section><section data-markdown><script type="text/template">
-- 多个程序同时运行 $\neq$ 多核处理器一个核心运行一个程序
-
-- 用多线程 & 多进程方式来同时执行多任务
-</script></section></section><section ><section data-markdown><script type="text/template">
-## 进程（Process）
-
-- 程序是一段指示计算机每一步执行动作的指令序列
-- 向操作系统发出执行一段程序的命令以后，程序被放入计算机内存运行，就产生了进程
+## 回顾
 </script></section><section data-markdown><script type="text/template">
 ## 进程（Process）
 
-- 进程是计算机中运行程序的实体
 - 一个程序至少产生一个进程，可以产生多个进程。
 - 两个不同进程之间的变量所在的内存是相互独立的，指针（C/C++）和全局变量不能共享
-- 一个进程需要系统分配 CPU 、内存、文件、I/O设备等资源以后才能工作
-</script></section></section><section  data-markdown><script type="text/template">
+</script></section><section data-markdown><script type="text/template">
 ## 线程（Thread）
 
-- 线程指的是进程中一个单一顺序的控制流
+- 线程是进程中一个单一顺序的控制流
 - 一个进程中可以同时执行多个线程，每条线程并行执行不同的任务
-- 线程被包含在进程之中，是进程中的实际运作单位
-- 线程是操作系统能够进行运算调度的最小单位
-- 每个线程都有独立的寄存器和栈空间
 - 同一个进程内的各个线程共享虚拟地址，因此一个进程内的所有线程的内存是共享的
-</script></section><section ><section data-markdown><script type="text/template">
-## 多任务并行
-
-- 操作系统中任何时候都有大量的程序同时执行
-- 但是本质上 CPU 的一个核心在某一特定时刻只能执行一个任务
-- 使用者往往感受不到大量同时运行的线程相互之间有什么影响
-- 这是怎么做到的？
-</script></section><section data-markdown><script type="text/template">
-- 实际上操作系统的做法是__让 CPU 以很快的速度在不同的线程之间来回切换__
-- 在一段时间内，可以做到每个线程都执行一小段时间
-- 在使用者看来，就是在同时执行很多任务
-
-![](./images/450px-Multithreaded_process.png)
 </script></section></section><section ><section data-markdown><script type="text/template">
-## 多进程与多线程编程
+## 多进程编程
 
-- 在写复杂程序的时候，同时执行多个任务是不可避免的
-- 这时需要在程序中使用多进程/多线程编程。
-- 需要在程序中同时进行多个任务的时候，一般有以下 3 种实现方式
-  - 多进程
-  - 多线程
-  - 多进程 + 多线程
+```python
+import multiprocessing
+
+# 定义 foo
+
+p = multiprocessing.Process(target=foo， name='hehe')
+p.start()
+# 做别的事情
+p.join()
+```
+
+- 在 Python 中，多进程的使用也非常容易
+- 接口与 Thread 几乎一致
+</script></section><section data-markdown><script type="text/template">
+## Python 的多进程编程
+
+- Python 的多进程运行不受 GIL 的限制
+- 多进程之间传递数据可以使用 `multiprocessing.Queue`
+- `multiprocessing.Queue` 与 `queue.Queue` 接口一致
+- `queue.Queue` 不能在多进程中正常工作（？）
+</script></section><section data-markdown><script type="text/template">
+## 进程池
+
+- 启动新进程的时间和内存开销要远远大于启动新线程
+- 在 Python 中如果需要让大量独立的进程并行执行很多任务的话，可以考虑使用进程池（`multiprocessing.Pool`）实现
+</script></section></section><section ><section data-markdown><script type="text/template">
+## C++ 多进程
+
+- C++ 标准库不支持多进程编程。
+- 在 \*nix 系统中，可以使用 unistd.h 中的 fork 来创建新的进程。
+</script></section><section data-markdown><script type="text/template">
+## C++ 多进程
+
+```cpp
+#include <stdio.h>
+#include <unistd.h>
+
+int main() {
+  printf("Hello!\n");
+  pid_t pid = fork();
+  printf("%d\n", pid);
+  if (pid == 0) {
+    printf("I'm child process.\n");
+  } else {
+    printf("I'm main process, child pid = %d.\n", pid);
+  }
+}
+```
+
+- 使用fork 创建了一个新的进程。
+</script></section><section data-markdown><script type="text/template">
+## fork
+
+- 调用 fork 时，会在 fork 处复制当前的进程，产生一个子进程
+- fork 的返回值对两个进程不同
+  - 父进程中返回子进程的 pid
+  - 子进程中返回 0
+- 父进程和子进程同时在 fork 后继续运行
+- 此时，父进程和子进程的堆栈中的数据内容是相同的
+- 此后两个进程对变量的修改互相不会产生影响
+</script></section><section data-markdown><script type="text/template">
+## fork
+
+![](./images/forkjoin.png)
+</script></section><section data-markdown><script type="text/template">
+## fork
+
+- 通常在 fork 后需要两个进程做不同的工作
+- \*nix 提供了一系列 exec 函数，让一个进程可以切换到另一项工作
+- 在 Windows 中， `windows.h`，`CreateProcess`
+</script></section></section><section ><section data-markdown><script type="text/template">
+## 多线程与多进程的比较
+
+- 多线程
+  - 共享内存地址，线程间交换数据容易
+  - 同步需要考虑线程安全问题
+  - 创建、销毁时的开销较小
+  - 运行时占用资源小
+  - 一个线程挂掉会导致整个进程挂掉
+  - （CPython）受 GIL 的限制
+</script></section><section data-markdown><script type="text/template">
+## 多线程与多进程的比较
+
+- 多进程
+  - 内存地址分离，进程间交换数据困难
+  - 数据相对独立，一般不用担心安全性
+  - 创建、销毁时的开销较大
+  - 运行时占用资源大
+  - 多个进程相对独立
+  - （CPython）不受 GIL 限制
+</script></section><section data-markdown><script type="text/template">
+## 多线程与多进程的比较
+
+- 优先选择多线程编程（通常情况下）
+  - IO 密集
+  - 多任务计算量大
+  - 任务间切换频繁
+  - 大量创建和销毁子任务
+- 选择多进程（通常）
+  - 多个任务之间的相关性较弱
+  - 多机分布计算需求
+  - Python 并行进行大量计算（GIL）
+</script></section></section><section ><section data-markdown><script type="text/template">
+## 进程间通信与跨语言通信
+
+- 进程间通信（IPC）指至少两个进程或线程间传送数据或信号的一些技术或方法
 </script></section><section data-markdown><script type="text/template">
 ## 队式 17 为例
 
-- 程序在运行时可能会需要同时运行 3D 界面、游戏逻辑、以及调用两个选手的程序，而其中每个模块都需要在一个独立的控制流下运行
-</script></section><section data-markdown><script type="text/template">
 - 进程1： 平台
   - 线程1： 平台主程序
   - 线程2： 逻辑
@@ -105,284 +164,162 @@ mxj14@mails.tsinghua.edu.cn
   - 线程9： socket 收发
   - 线程10： Unreal 启动的各种线程
   - 线程11： ...
-</script></section></section><section  data-markdown><script type="text/template">
-## 多线程编程
-
-- 可以看到，队式 17 的模块内部主要是以多线程的方式实现的
-- 下面来看看多线程的实现
-</script></section><section ><section data-markdown><script type="text/template">
-## 简单的多线程程序
-
-
-```python
-import threading
-def foo():
-    print('Hello, world!')
-
-t = threading.Thread(target=foo)  # 创建线程
-t.start()  # 启动线程
-# 然后就可以干别的事情了
-```
-
-- 以 Python 为例
-- 在 Python 中启动多线程只需要 import 一下 threading 库，创建一个 Thread 对象，然后启动就可以啦
 </script></section><section data-markdown><script type="text/template">
+## 队式 17 为例
 
-```python
-threading.Thread(group=None, target=None, name=None,
-                 args=(), kwargs={}, *, daemon=None)
-```
+- 选手程序被编译成了 dll，这一部分被合并到平台进程中，简化了选手和平台通信的过程
+- 实际实现中，采用了 Python ctypes 库提供的封装回调函数的办法，让选手的 C++ 程序可以在 C 线程内直接调用 Python 中实现的通信函数
+- Python 中通信函数使用队列来实现，每个选手的线程可以向队列中放入指令，由平台主线程拿出来处理
 
-- 来看看 Thread 的参数
-- group 并没有什么卵用
-- target 是 Thread 运行时调用的函数
-- name 是给这个线程起的名字（一个字符串）
-- args 是要传入 target 函数的所有参数（tuple）
-- kwargs 是传入 target 的命名参数（dict）
-- daemon 参数显式指定是否启动为守护线程，默认为否
+- 3D 播放器使用虚幻引擎制作生成
+- 播放器和平台的两个进程之间通过 Socket 传递数据
+</script></section></section><section ><section data-markdown><script type="text/template">
+## TCP/IP
+
+- TCP/IP 协议
+- 接入互联网的每台计算机有惟一的 IP 地址
+- 同一计算机上不同的程序和功能在收发信息时使用不同端口进行区分
 </script></section><section data-markdown><script type="text/template">
-## 一个例子
+## Socket 通信
+
+- Socket 是一种常用的网络中进程通信的工具
+- 指定
+    - IP地址
+    - 协议
+    - 端口
+- 就可以实现网络中两个进程的点对点通信
+- 当然也可以实现本机的进程间通信
+</script></section><section data-markdown><script type="text/template">
+## Socket 通信 - 服务器端
 
 ```python
-import threading
-import time
-
-def foo():
-    # 可以用 threading.current_thread() 获取当前所在的 Thread 对象
-    print('This is thread %s.' % threading.current_thread().name)
-    for i in range(5):
-        print('hehe :-)')
-    time.sleep(1)
-    print('Thread %s end.' % threading.current_thread().name)
+# 指定协议为 ipv4, TCP
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# 绑定到本机（127.0.0.1）的 6666 端口（端口可以自行指定）
+s.bind(('127.0.0.1', 6666))
 ```
 
 ```python
-t = threading.Thread(target=foo, name='hehe')
+# 开始监听
+backlog = 1  # 指定最大的连接数量
+s.listen(backlog)
+print('Waiting for connection.')
+
+# 接收一个新的连接
+sock, addr = s.accept()
+
+# 创建一个新的线程处理连接
+t = threading.Thread(target=socket_link, args=(sock, addr))
 t.start()
-
-print('This is thread %s.' % threading.current_thread().name)
-print('haha :-D' % t.name)
-print('Wait until %s end.' % t.name)
-
-t.join()
-print('This is thread %s.' % threading.current_thread().name)
 ```
+
+- `import socket, threading`
 </script></section><section data-markdown><script type="text/template">
-## 结果
-
-```
-This is thread hehe.
-hehe :-)
-This is thread MainThread.
-hehe :-)
-haha :-D
-hehe :-)
-Wait until hehe end.
-hehe :-)
-hehe :-)
-Thread hehe end.
-This is thread MainThread.
-```
-
-- 可以看到在启动了线程 hehe 之后，主线程并没有中断运行，而是开始和 hehe “同时” 运行
-- 当主线程调用 t.join() 时，开始挂起等待 hehe 运行结束
-</script></section><section data-markdown><script type="text/template">
-## Thread 类
+## Socket 通信 - 服务器端
 
 ```python
-t = threading.Thread(target=foo)
-t.start()  # 启动线程，只能调用一次
-t.join()  # 阻塞当前所在的线程，等待 t 结束运行
+def socket_link(sock, addr):
+    print('Accept connection from %s:%s' % addr)
+    try:
+        sock.send(b'Hello!')  # 服务端和客户端都可以收发数据
+        while True:
+            msg = sock.recv(4096)  # 接收信息
+            if(len(msg) > 0):
+                print(msg.decode('ascii'))
+            else:  # 没有收到消息就断开连接
+                break
+    finally:
+        sock.close()  # 要保证在使用后关闭 Socket
+```
+</script></section><section data-markdown><script type="text/template">
+## Socket 通信 - 客户端
+
+```python
+addr = ('127.0.0.1', 6666)   # 与 server 相同
+s = socket.socket()
+
+s.connect(addr)  # 如果此时连接失败会抛出异常
 ```
 
-- 对启动新线程的一种理解方式是从当前所在的控制流中分支出一条控制流
-- join() 就表示在这个位置与分出去的控制流再合并为顺序执行的一个控制流
-
-![](./images/forkjoin.png)
+```python
+try:
+    msg_get = s.recv(4096)
+    print(msg_get.decode('ascii'))
+    for i in range(10):
+        msg = b'hehe'
+        s.send(msg)
+        print('Message to %s:%s : %s' % (*addr, msg.decode('ascii')))
+        time.sleep(1)
+finally:
+    s.close()  # 要保证在使用后关闭 Socket，否则该端口会一直被占用
+```
 </script></section><section data-markdown><script type="text/template">
-## Thread 类
+## Socket 通信
 
-- 如果不想永远等下去的话也可以在 join 中输入参数 `t.join(timeout=1)`
-- 在这种情况下需要用 `t.is_alive()` 检查等待的线程是否真的在 timeout 内结束运行
+![](./images/48.png)
+</script></section><section data-markdown><script type="text/template">
+## Socket 通信
 
-- 无法直接获得 thread 所运行函数的返回值
-- 需要采用其他的方法获得多线程运行的结果
+- 为了保证正确接收每一条数据，发送端在发送的时候应该主动标记每条信息的起止
+- recv 指定的 buffer 大小小于实际接收到的字符数量，剩下字符留在缓冲区中，可以下次再接收
+</script></section><section data-markdown><script type="text/template">
+## C++ 中的 Socket
+
+- 在标准 C++ 中，Socket 的实现是平台相关的
+- 实现比 Python 复杂（要用的时候在网上现抄代码..）
+- Windows： winsock
+- \*nix： Linux Socket 相关内容。
+</script></section></section><section ><section data-markdown><script type="text/template">
+## JSON
+
+- 几乎所有语言都支持 Socket
+- 只要能在收发端将数据转换为字符串
+- 就可以在任意语言实现的多个进程之间传递任何数据
+- 一种常用的纯文本数据格式是 JSON
+</script></section><section data-markdown><script type="text/template">
+## JSON
+
+```JSON
+{
+     "firstName": "John",
+     "lastName": "Smith",
+     "sex": "male",
+     "age": 25,
+     "address":
+     {
+         "streetAddress": "21 2nd Street",
+         "city": "New York",
+         "state": "NY",
+         "postalCode": "10021"
+     }
+ }
+ ```
+</script></section><section data-markdown><script type="text/template">
+## JSON
+
+- 在 Python 中只需要使用模块 `json`
+- 然后调用 `json.dumps` 和 `json.loads`
+- 实现 Python 数据结构与 JSON 字符串之间的转换
+- 其他语言也有很多 JSON 相关的轮子可用
+</script></section></section><section ><section data-markdown><script type="text/template">
+## 作业-Socket
+
+- 自行查 & 抄 & 改代码
+- 编译对应自己平台的 C++ Socket Server（实际上是 C..）
+- 用示例代码中的 Python Socket Client 与之建立连接
+- 作业不收，成功接收到数据就好
+</script></section><section data-markdown><script type="text/template">
+## 作业-跨语言协作（选做）
+
+- 通过 Socket 通信
+- 在 Python 中向 C++ 程序发出计算斐波那契数列的请求
+- C++ 程序收到后完成计算并通过 Socket 返回生成的数列
+- 在 Python 中转换为 int 型 list
+- 当然还是不收...
 </script></section></section><section  data-markdown><script type="text/template">
-## 线程间内存共享
+## 下期预告
 
-- 如果在程序中有一个所有函数都可以访问的全局变量的话，那么是不是就可以将函数的返回值写进全局变量中呢？
-- 对于仅有一个线程写这个变量的情况下没错
-- 在实践中，有时会出现多个线程同时要读写一个变量的状况，这时候多个线程的操作会发生冲突
-- 当多个线程同时尝试修改一块内存值的时候，由于线程间切换的问题，可能会导致数据不正确（见讲义）
-</script></section><section ><section data-markdown><script type="text/template">
-## 互斥锁（Mutex）
-
-- 互斥锁是一种用于多线程编程中，防止两条线程同时对同一公共资源（比如全局变量）进行读写的机制。该目的通过将代码切片成一个一个的临界区域（critical section）达成（摘自维基百科）
-</script></section><section data-markdown><script type="text/template">
-## 互斥锁
-
-```python
-cnt = 0
-mutex = threading.Lock()  # 创建锁
-
-def foo():
-    global cnt
-    for i in range(100000):
-        mutex.acquire()  # 获取锁
-        try:
-            cnt = cnt + 1
-        finally:
-            mutex.release() # 释放锁
-```
-
-- 互斥锁可以保证一个线程执行一段代码时不会有其他线程同时执行同一段代码
-- 一个线程尝试运行带有互斥锁的代码段时，如果没有其他线程获得这个锁，那么这个线程就可以获得锁，并进入该段代码
-- 否则，这个线程会暂停运行，直到该段代码的锁被释放
-</script></section><section data-markdown><script type="text/template">
-## 互斥锁
-
-```python
-cnt = 0
-mutex = threading.Lock()
-
-def foo():
-    global cnt
-    for i in range(100000):
-      with mutex:
-        cnt = cnt + 1
-```
-
-- 用 with 语句来写更加优雅
-</script></section><section data-markdown><script type="text/template">
-## 互斥锁
-
-- 如果有两个线程都持有锁，并且互相希望访问对方加锁的代码块的话，就会出现死锁的情况
-- 在这种情况下，如果没有外力干预，这两个线程就会永远暂停运行
-- 需要避免出现这种情况
-</script></section><section data-markdown><script type="text/template">
-## 互斥锁
-
-- 如果希望一段代码可以同时被多个线程访问，但是又想限制访问的线程数量的话，可以使用信号量 （Semaphore） 来限制同时访问一段代码的总线程数
-</script></section></section><section ><section data-markdown><script type="text/template">
-## 线程安全队列
-
-- 队列（Queue）是一种非常好的多线程同步机制
-- Python 提供的 Queue 是线程安全的队列
-- 使用 Python Queue 不用考虑会出现数据被多线程改错的问题
-- 不用自己再加锁
-</script></section><section data-markdown><script type="text/template">
-## 线程安全队列
-
-```python
-import queue
-import random
-import threading
-import time
-
-q = queue.Queue()
-```
-
-```python
-def foo():
-    time.sleep(random.random())
-    # 向队列里放东西
-    q.put('Hello! %s' % threading.current_thread().name)
-
-for i in range(10):
-    t = threading.Thread(target=foo)
-    t.start()
-
-for i in range(10):
-    s = q.get()  # 从队列中取东西
-    print(s)
-```
-
-- 如果在队列为空的时候尝试调用 `get()` 的话，当前线程会暂停运行，一直等到队列非空 get 到东西为止
-</script></section></section><section ><section data-markdown><script type="text/template">
-## 多核处理器
-
-- 一个线程是一个线性的控制流
-- 在多核处理器上，我们可以让每个线程在一个独立的核心上运行
-- 在 N 核处理器上的多线程任务就可以用单线程执行的 1/N 的时间完成（如果线程够多）？
-</script></section><section data-markdown><script type="text/template">
-## 多核处理器
-
-- 对绝大多数常见的语言而言，这个认识是正确的
-- 然而，对 Python 来说，在多核处理器上运行一个多线程程序却往往不能达到预期的性能提升
-</script></section><section data-markdown><script type="text/template">
-## GIL
-
-- 在 Python 的 CPython 实现中，引入了全局锁 GIL
-
-> In CPython, the global interpreter lock, or GIL, is a mutex that prevents multiple native threads from executing Python bytecodes at once. This lock is necessary mainly because CPython’s memory management is not thread-safe. (However, since the GIL exists, other features have grown to depend on the guarantees that it enforces.
-</script></section><section data-markdown><script type="text/template">
-## GIL
-
-- GIL 的存在使得 Python 的代码在同一时刻只能被同一个进程内的一个线程执行在性能上强行将程序变成单线程，限制了 Python 多线程的效率
-- 实际上在运行中，一个 Python 程序的所有线程加起来也只能使用总计一个 CPU 核的计算资源
-</script></section></section><section ><section data-markdown><script type="text/template">
-## C++ 多线程
-
-- C++ 11 的 STL 中也提供了多线程编程接口
-</script></section><section data-markdown><script type="text/template">
-## C++ 多线程
-
-```cpp
-void foo(string str) {
-    cout << str << endl;
-}
-
-int main() {
-    // 创建线程对象的同时即开始运行
-    std::thread t(foo, "Hello, world!");
-
-    // Do something else
-
-    t.join();  // 等待线程结束
-}
-```
-
-- 头文件 `#include<thread>`
-- C++ 的多线程是真正的多线程
-- 在多核 CPU 上运行的多线程 C++ 程序可以充分利用计算机资源
-</script></section><section data-markdown><script type="text/template">
-## C++ 多线程
-
-```cpp
-std::mutex mtx;
-mtx.lock();
-// Do something
-mtx.unlock();
-```
-- 互斥锁头文件 `#include<mutex>`
-</script></section><section data-markdown><script type="text/template">
-## C++ 多线程
-
-- C++ 的 queue 并不是线程安全的
-- 如果想用 queue 来进行线程间同步的话需要手动对改变 queue 内容的操作加锁
-</script></section></section><section ><section data-markdown><script type="text/template">
-## 作业
-
-### 完成一个非常简单的多线程爬虫
-
-- 一个获取豆瓣电影相关推荐的小程序
-- 单线程的代码已经写好
-- 把代码改为多线程实现
-- 提交到邮箱（见讲义）
-- （看代码）
-</script></section><section data-markdown><script type="text/template">
-## 作业提示
-
-- 可以开若干个线程，让每个线程自行去队列中领取任务并执行
-- 注意 Python 的 list 不是线程安全的。
-
-</script></section></section><section  data-markdown><script type="text/template">
-## 下一讲
-
-- 多进程编程
-- 进程间通信
-- 跨语言通信
-
+- 软件测试
 </script></section></div>
         </div>
 
@@ -430,7 +367,8 @@ mtx.unlock();
             options = extend(defaultOptions, options, queryOptions);
             Reveal.initialize(options);
         </script>
-
-          <script src="/scripts/reveal.js"></script>
+        
+          <script src="/scripts/slides"></script>
     </body>
 </html>
+
