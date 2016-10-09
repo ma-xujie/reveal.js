@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>reveal-md</title>
         <link rel="stylesheet" href="css/reveal.css">
-        <link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+        <link rel="stylesheet" href="css/theme/serif.css" id="theme">
         <!-- For syntax highlighting -->
         <link rel="stylesheet" href="lib/css/zenburn.css">
 
@@ -21,150 +21,35 @@
 
 <!-- Main -->
 
-<div id="title"> CONNECT6 项目风格 </div>
+<div id="title"> 手机多人游戏手柄 </div>
 
-<div id="author"> 马栩杰 </div>
+<div id="author"> Team 十一 </div>
 
-<div id="organization"> 电子工程系 </div>
+<div id="organization"> 郭超凡、黄震、马栩杰、毛成志 </div>
+</script></section><section ><section data-markdown><script type="text/template">
+## 背景
 
-<div id="email"> mxj14@mails.tsinghua.edu.cn </div>
+- 聚会时的尴尬..
+
+![](./juhui.jpg)
+</script></section><section data-markdown><script type="text/template">
+## 背景
+
+- 如何解决？
+
+![](./shoubing.jpg)
+
+</script></section></section><section  data-markdown><script type="text/template">
+## 手机多人游戏手柄
 </script></section><section  data-markdown><script type="text/template">
-- 以下内容以 GitHub connect6-ng desktop 版为基础
-</script></section><section ><section data-markdown><script type="text/template">
-### 代码风格分析
+## 功能
 
-- 以 `GameModel.java` 为例
-- `GameModel.java` 进行程序运行时棋盘数据的管理
-</script></section><section data-markdown><script type="text/template">
-### `GameModel.java`
-
-```java
-/** @file GameModel.java
- * @brief Game的Model
- * @author 侯奇
- * @author 卢嘉勋
- * @author 刘菁菁
- * @date 2014-01-01
- * @version v 1.0.0
- */
-```
-
-- 代码文件开头的注释应该清楚说明这个文件实现的功能
-- 文件名 `GameModel.java`，注释 `Game 的 Model`，实际上很难让人一下子就理解这个文件到底做了什么
-</script></section><section data-markdown><script type="text/template">
-### `GameModel.java`
-
-- 类定义前对类的功能做了一个说明
-
-```java
-/**
- * @brief Game的Model
- * @details
- * 游戏的数据Model，用来负责数据的更新
- */
-public class GameModel extends Observable implements Serializable {}
-```
-
-- 从类的说明来看，这个类应该维护了游戏运行过程中的"当前游戏状态"
-</script></section><section data-markdown><script type="text/template">
-###  `class GameModel`
-
-- 先不考虑 Connect-6 的实现
-- 从逻辑上来说，这个类需要包含以下内容
-  - 数据
-    - 包含棋盘上所有棋子的颜色和位置
-    - 可能还需要保存棋子的落子顺序（悔棋）
-  - 方法
-    - 落子（参数：落子位置、落子颜色）
-    - 悔棋
-    - 设置棋盘状态（如果有从历史棋谱恢复游戏的功能的话）
-    - 返回棋盘状态（界面显示用）
-</script></section></section><section  data-markdown><script type="text/template">
-
-### `GameModel` 类的成员变量
-
-```java
-  // mxj: 棋子，每个 MyPoint 包括棋子的颜色和位置
-	private Vector<MyPoint> Chessmans;
-
-	/** 黑子/白子（先手/后手）
-	 * 0 = 黑子
-	 * 1 = 白子
-   * mxj: 这里改成 isPlayerOffensive（玩家是否先手）或许更好？
-   * mxj: 不过 bool 值就要反过来了
-   * mxj: 另外实际上只有两种颜色，所以 color 设置成 int 类型是让人困惑的
-	 */
-	private int color;
-
-
-	// 人机/人人
-	// 0 = 非人机对战
-	// 1 = 人机对战
-  // mxj: 标记当前游戏是人人对战还是人机对战
-	private boolean computer;
-
-	// 模式
-	// 0 = 练习模式
-	// 1 = 实战模式
-  // mxj: 此后可以加入更多的游戏模式
-	private int mode;
-```
-
-- 从成员变量来看，对这个类的功能的分析基本是正确的
-- 代码风格上，这一段的注释方式并不统一
-- 成员变量的变量名含义不够明确
-</script></section><section ><section data-markdown><script type="text/template">
-### `GameModel` 类的方法
-
-- 对类的方法有很多冗余的注释
-- 举一些例子：
-
-```java
-/** @brief 构造函数
- */
-public GameModel()
-
-/** @brief 新建游戏
- */
-public void newGame()
-
-/** @brief 重置状态
- */
-public void resetState()
-
-/** @brief 是否为玩家的turn
- *
- * @return 是否为玩家的turn
- */
-public boolean playerTurn()
-
-/** @brief 返回棋盘的布局
- *
- * @return 棋盘布局
- */
-public Vector<MyPoint> getChessmans()
-
-
-/** @brief 返回颜色（先手/后手）
- *
- * @return 返回颜色（先手/后手）
- */
-public int getColor()
-
-/** @brief 设置返回颜色（先手/后手）
- *
- * @param color 返回颜色（先手/后手）
- */
-public void setColor(int color)
-```
-</script></section><section data-markdown><script type="text/template">
-### 关于冗余的注释
-
-- 在一个软件项目中，注释是不可或缺的
-- 但是这并不意味着注释越多越好
-- 良好的变量命名风格和代码组织方式有时会比一段累赘的注释更加有助于其他人快速理解代码
-</script></section></section><section  data-markdown><script type="text/template">
-## Thanks
+- 在计算机上运行游戏
+- 用手机连接计算机
+- 手机作为游戏手柄
+- 通过 Wifi 联接
+- 可以多人联机同时游戏
+- 还可以利用手机丰富的传感器进行体感游戏
 </script></section></div>
         </div>
 
